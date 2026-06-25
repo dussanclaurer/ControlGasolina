@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OPERARIO
+  SUPERVISOR
+}
+
+enum EstadoVenta {
+  APROBADA
+  RECHAZADA
+  PENDIENTE_SYNC
+}
+
+model User {
+  id         String    @id @default(cuid())
+  email      String    @unique
+  name       String
+  password   String
+  role       Role      @default(OPERARIO)
+  surtidorId String?
+  surtidor   Surtidor? @relation(fields: [surtidorId], references: [id])
+  ventas     Venta[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Surtidor {
+  id        String   @id @default(cuid())
+  nombre    String
+  direccion String?
+  latitud   Float
+  longitud  Float
+  activo    Boolean  @default(true)
+  usuarios  User[]
+  ventas    Venta[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Venta {
+  id                  String      @id @default(cuid())
+  ci                  String
+  nombreCliente       String
+  numeroChasis        String
+  montoBs             Float
+  litros              Float
+  precioPorLitro      Float       @default(6.96)
+  surtidorId          String
+  surtidor            Surtidor    @relation(fields: [surtidorId], references: [id])
+  operarioId          String
+  operario            User        @relation(fields: [operarioId], references: [id])
+  latitudDispositivo  Float?
+  longitudDispositivo Float?
+  fecha               DateTime    @default(now())
+  estado              EstadoVenta @default(APROBADA)
+  dispositivoInfo     String?
+  offlineId           String?     @unique
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@index([ci, numeroChasis, surtidorId])
+  @@index([fecha])
+}
