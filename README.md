@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Control Social de Combustible ⛽
 
-## Getting Started
+Aplicación web progresiva (PWA) diseñada para la fiscalización, registro y control de venta de combustible en surtidores. El sistema permite registrar transacciones en campo incluso sin conexión a internet y consolida los datos para que supervisores y entidades reguladoras puedan auditar la distribución de combustible en Bolivia.
 
-First, run the development server:
+## 🚀 Características Principales
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+*   **Offline-First:** Sistema diseñado para operar ininterrumpidamente en áreas con baja o nula cobertura de red. Las ventas realizadas sin conexión se guardan en IndexedDB y se sincronizan automáticamente en segundo plano (`background sync`) una vez que el dispositivo recupera la conexión.
+*   **Reglas de Negocio Estrictas:** Bloquea ventas múltiples al mismo vehículo (combinación de Carnet de Identidad y Número de Chasis) en un mismo día dentro de un mismo surtidor.
+*   **Validación Geográfica (GPS):** Captura automáticamente la latitud y longitud del dispositivo del operario al momento de cada venta, permitiendo auditorías de ubicación para prevenir fraudes.
+*   **Roles y Permisos:**
+    *   `OPERARIO`: Interfaz simplificada y rápida enfocada en el registro continuo de ventas.
+    *   `SUPERVISOR`: Acceso a paneles administrativos, KPIs en tiempo real (recaudación y litros), historial completo con exportación CSV, y gestión CRUD de usuarios y surtidores.
+*   **PWA Instalable:** Experiencia de aplicación nativa tanto en Android como iOS con íconos propios, modo *standalone* y diseño *mobile-first*.
+
+## 🛠️ Stack Tecnológico
+
+*   **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS v4, Lucide React (Íconos).
+*   **Backend & API:** Server Actions de Next.js.
+*   **Autenticación:** Auth.js (NextAuth v5) con estrategia JWT y encriptación *bcryptjs*.
+*   **Base de Datos:** PostgreSQL.
+*   **ORM:** Prisma v6.
+*   **PWA:** `@ducanh2912/next-pwa`.
+
+## ⚙️ Configuración y Despliegue
+
+### Requisitos Previos
+*   Node.js v20+
+*   `pnpm` (Recomendado para la instalación de dependencias)
+*   PostgreSQL configurado y en ejecución
+
+### Variables de Entorno (`.env`)
+Debes crear un archivo `.env` en la raíz del proyecto con el siguiente contenido:
+
+```env
+# URL de conexión a tu base de datos PostgreSQL
+DATABASE_URL="postgresql://usuario:password@localhost:5432/control_gasolina?schema=public"
+
+# Secreto para encriptar los JWT de Auth.js
+# Genera uno con: npx auth secret
+AUTH_SECRET="tu-secreto-super-seguro"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Comandos de Instalación
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Instalar dependencias:**
+   ```bash
+   pnpm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Migrar la base de datos:**
+   ```bash
+   npx prisma db push
+   # O alternativamente: npx prisma migrate dev
+   ```
 
-## Learn More
+3. **Poblar la base de datos (Seed):**
+   ```bash
+   pnpm db:seed
+   ```
+   *Nota: Esto creará los usuarios por defecto (ej. supervisor@control.bo) y surtidores de prueba.*
 
-To learn more about Next.js, take a look at the following resources:
+4. **Ejecutar en entorno de desarrollo:**
+   ```bash
+   pnpm dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. **Compilar para producción:**
+   ```bash
+   pnpm build
+   pnpm start
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📱 Uso de la PWA
+Para instalar la aplicación en un dispositivo móvil:
+1. Abre la aplicación en Chrome (Android) o Safari (iOS).
+2. Selecciona "Añadir a la pantalla de inicio" (Add to Home Screen).
+3. La aplicación se instalará localmente y podrá abrirse en modo de pantalla completa sin la barra del navegador.

@@ -23,6 +23,8 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
+import InstallPrompt from '@/components/install-prompt'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
@@ -33,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${inter.className} antialiased bg-slate-950 text-slate-100 min-h-screen`}>
         {children}
+        <InstallPrompt />
       </body>
     </html>
   )

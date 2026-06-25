@@ -120,19 +120,19 @@ export default function AppNavbar({ user }: AppNavbarProps) {
 
       {/* Mobile bottom navigation */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-slate-900/95 backdrop-blur-md border-t border-slate-800" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-        <ul className="flex justify-around">
+        <ul className="flex justify-around items-center h-14">
           {navLinks.map(({ href, label, icon: Icon }) => {
             const active = isActive(href)
             return (
-              <li key={href} className="flex-1">
+              <li key={href} className="flex-1 h-full">
                 <Link
                   href={href}
-                  className={`flex flex-col items-center justify-center min-h-16 gap-1 text-xs font-medium transition-all ${
+                  className={`flex flex-col items-center justify-center h-full w-full gap-0.5 text-xs font-medium transition-all ${
                     active ? 'text-amber-400' : 'text-slate-500'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${active ? 'drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]' : ''}`} />
-                  <span className="text-[10px]">{label}</span>
+                  <Icon className={`w-5 h-5 shrink-0 ${active ? 'drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]' : ''}`} />
+                  <span className="text-[10px] truncate max-w-full px-1 leading-tight">{label}</span>
                 </Link>
               </li>
             )

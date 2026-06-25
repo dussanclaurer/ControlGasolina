@@ -116,12 +116,14 @@ export default function HistorialClient() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-700/50 bg-slate-800/50">
-                  {['Fecha/Hora', 'CI', 'Cliente', 'Chasis', 'Surtidor', 'Monto', 'Litros', 'GPS'].map((h, i) => (
-                    <th key={h} className={`text-left text-xs text-slate-500 font-semibold uppercase tracking-wider px-4 py-3 ${
-                      i >= 2 && i <= 4 ? 'hidden sm:table-cell' : ''} ${i === 3 ? 'hidden lg:table-cell' : ''} ${i === 4 ? 'hidden md:table-cell' : ''} ${i === 7 ? 'hidden md:table-cell text-center' : ''} ${i >= 5 ? 'text-right' : ''}`}>
-                      {h}
-                    </th>
-                  ))}
+                  <th className="text-left text-xs text-slate-500 font-semibold uppercase tracking-wider px-4 py-3">Fecha/Hora</th>
+                  <th className="text-left text-xs text-slate-500 font-semibold uppercase tracking-wider px-4 py-3">CI</th>
+                  <th className="text-left text-xs text-slate-500 font-semibold uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Cliente</th>
+                  <th className="text-left text-xs text-slate-500 font-semibold uppercase tracking-wider px-4 py-3 hidden lg:table-cell">Chasis</th>
+                  <th className="text-left text-xs text-slate-500 font-semibold uppercase tracking-wider px-4 py-3 hidden md:table-cell">Surtidor</th>
+                  <th className="text-right text-xs text-slate-500 font-semibold uppercase tracking-wider px-4 py-3">Monto</th>
+                  <th className="text-right text-xs text-slate-500 font-semibold uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Litros</th>
+                  <th className="text-center text-xs text-slate-500 font-semibold uppercase tracking-wider px-4 py-3 hidden md:table-cell">GPS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/30">
