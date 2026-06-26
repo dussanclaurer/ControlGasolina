@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   title: 'Control Social de Combustible',
   description: 'Sistema de fiscalización de venta de combustible en surtidores - Bolivia',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/icons/icon-192.png',
+    apple: '/icons/icon-192.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

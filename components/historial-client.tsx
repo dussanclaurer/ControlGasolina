@@ -141,7 +141,7 @@ export default function HistorialClient() {
                     <td className="px-4 py-3 text-right text-slate-400 hidden sm:table-cell text-xs whitespace-nowrap">{venta.litros.toFixed(2)}</td>
                     <td className="px-4 py-3 text-center hidden md:table-cell">
                       {venta.latitudDispositivo
-                        ? <MapPin className="w-3.5 h-3.5 text-emerald-400 mx-auto" title={`${venta.latitudDispositivo?.toFixed(4)}, ${venta.longitudDispositivo?.toFixed(4)}`} />
+                        ? <span title={`${venta.latitudDispositivo?.toFixed(4)}, ${venta.longitudDispositivo?.toFixed(4)}`} className="inline-block"><MapPin className="w-3.5 h-3.5 text-emerald-400 mx-auto" /></span>
                         : <span className="text-slate-600 text-xs">—</span>}
                     </td>
                   </tr>
