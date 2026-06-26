@@ -214,3 +214,56 @@ export async function obtenerHistorial(params: {
 
   return { ventas, total }
 }
+
+export async function verificarClientePorCI(ci: string) {
+  const session = await auth()
+  if (!session?.user) return { success: false, error: 'No autenticado' }
+
+  const operario = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { surtidorId: true }
+  })
+
+  if (!operario?.surtidorId) {
+    return { success: false, error: 'Sin surtidor asignado' }
+  }
+
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const manana = new Date(hoy)
+  manana.setDate(manana.getDate() + 1)
+
+  // Obtener historial de las ultimas 5 compras
+  const historial = await prisma.venta.findMany({
+    where: { 
+      ci: ci.toUpperCase(),
+      estado: 'APROBADA'
+    },
+    include: {
+      surtidor: { select: { nombre: true } },
+    },
+    orderBy: { fecha: 'desc' },
+    take: 5,
+  })
+
+  if (historial.length === 0) {
+    return { success: true, encontrado: false }
+  }
+
+  const ultimoRegistro = historial[0]
+
+  const comprasHoySurtidor = historial.filter(v => 
+    v.surtidorId === operario.surtidorId && 
+    new Date(v.fecha) >= hoy && 
+    new Date(v.fecha) < manana
+  )
+
+  return { 
+    success: true, 
+    encontrado: true, 
+    nombreCliente: ultimoRegistro.nombreCliente,
+    numeroChasis: ultimoRegistro.numeroChasis,
+    comprasHoySurtidor,
+    historial 
+  }
+}

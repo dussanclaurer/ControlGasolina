@@ -4,9 +4,9 @@ import { useState, useTransition, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import {
   Fuel, User, Car, DollarSign, MapPin,
-  CheckCircle, XCircle, AlertTriangle, Loader2, Send, RotateCcw, Wifi, WifiOff
+  CheckCircle, XCircle, AlertTriangle, Loader2, Send, RotateCcw, Wifi, WifiOff, Search
 } from 'lucide-react'
-import { registrarVenta } from '@/actions/ventas'
+import { registrarVenta, verificarClientePorCI } from '@/actions/ventas'
 import { obtenerGeolocalizacion } from '@/lib/geolocation'
 import { guardarVentaOffline, generarOfflineId } from '@/lib/indexeddb'
 
@@ -34,6 +34,8 @@ export default function VentaForm() {
   const [result, setResult] = useState<ResultState>({ type: null, message: '' })
   const [geoStatus, setGeoStatus] = useState<'idle' | 'loading' | 'ok' | 'warning'>('idle')
   const [geoData, setGeoData] = useState<{ lat: number; lon: number } | null>(null)
+  const [isCheckingClient, setIsCheckingClient] = useState(false)
+  const [clientInfo, setClientInfo] = useState<any>(null)
 
   const litros = form.montoBs ? (parseFloat(form.montoBs) / PRECIO_LITRO).toFixed(2) : '0.00'
 
@@ -67,7 +69,24 @@ export default function VentaForm() {
   function resetForm() {
     setForm({ ci: '', nombreCliente: '', numeroChasis: '', montoBs: '' })
     setResult({ type: null, message: '' })
+    setClientInfo(null)
     obtenerGPS()
+  }
+
+  async function handleVerificarCI() {
+    if (!form.ci || form.ci.length < 5) return
+    setIsCheckingClient(true)
+    setClientInfo(null)
+    const res = await verificarClientePorCI(form.ci)
+    setIsCheckingClient(false)
+    if (res.success && res.encontrado) {
+      setForm(prev => ({
+        ...prev,
+        nombreCliente: res.nombreCliente || prev.nombreCliente,
+        numeroChasis: res.numeroChasis || prev.numeroChasis
+      }))
+      setClientInfo(res)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -197,13 +216,64 @@ export default function VentaForm() {
           <label htmlFor="ci" className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
             Carnet de Identidad
           </label>
-          <div className="relative">
-            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input id="ci" name="ci" type="text" value={form.ci} onChange={handleChange}
-              placeholder="Ej: 5432198" required
-              className="w-full pl-10 pr-4 py-3.5 bg-slate-800/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/40 transition-all text-sm" />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <input id="ci" name="ci" type="text" value={form.ci} onChange={handleChange}
+                placeholder="Ej: 5432198" required
+                className="w-full pl-10 pr-4 py-3.5 bg-slate-800/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/40 transition-all text-sm" />
+            </div>
+            <button 
+              type="button" 
+              onClick={handleVerificarCI}
+              disabled={isCheckingClient || !form.ci}
+              className="px-4 bg-slate-800 border border-slate-700 rounded-xl text-slate-300 hover:bg-slate-700 transition-colors flex items-center justify-center disabled:opacity-50"
+            >
+              {isCheckingClient ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Info Cliente Encontrado */}
+        {clientInfo && (
+          <div className="p-4 bg-slate-800/40 rounded-xl border border-slate-700/50 text-sm space-y-3">
+            {clientInfo.comprasHoySurtidor?.length > 0 ? (
+              <div className="flex items-start gap-2 text-amber-400 bg-amber-500/10 p-3 rounded-lg border border-amber-500/20">
+                <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">¡Atención! Cliente ya registró compra hoy</p>
+                  <p className="text-xs opacity-90 mt-1">
+                    No podrá registrar una nueva venta con el vehículo que ya fue atendido hoy en este surtidor.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-emerald-400 text-xs">
+                <CheckCircle className="w-4 h-4" /> Cliente verificado. Puede proceder.
+              </div>
+            )}
+            
+            {clientInfo.historial?.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase mb-2">Últimas Compras</p>
+                <div className="space-y-2">
+                  {clientInfo.historial.map((v: any) => (
+                    <div key={v.id} className="flex justify-between items-center text-xs bg-slate-800/60 p-2 rounded">
+                      <div>
+                        <p className="text-slate-300">{new Date(v.fecha).toLocaleDateString('es-BO')} {new Date(v.fecha).toLocaleTimeString('es-BO', {hour: '2-digit', minute: '2-digit'})}</p>
+                        <p className="text-slate-500">{v.surtidor?.nombre}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-amber-400 font-medium">Bs {v.montoBs}</p>
+                        <p className="text-slate-500">Chasis: {v.numeroChasis.slice(-6)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Nombre */}
         <div>
