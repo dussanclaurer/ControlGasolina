@@ -1,0 +1,26 @@
+databases:
+  - name: controlgas-db
+    databaseName: controlgasolina
+    user: controlgas_admin
+    plan: free # Cambiar a un plan de pago si la base de datos excede los límites gratuitos
+
+services:
+  - type: web
+    name: controlgas-web
+    env: node
+    plan: free
+    buildCommand: pnpm install && pnpm build && pnpm db:push
+    startCommand: pnpm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: controlgas-db
+          property: connectionString
+      - key: NEXT_PUBLIC_SITE_URL
+        generateValue: true # Render llenará esto automáticamente con la URL de la app
+      - key: AUTH_SECRET
+        generateValue: true # Genera un secreto aleatorio seguro automáticamente
+      - key: AUTH_TRUST_HOST
+        value: "true"
+      - key: NODE_ENV
+        value: production
